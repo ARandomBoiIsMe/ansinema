@@ -84,6 +84,7 @@ class VideoParser:
             # Calculate row size and padding
             row_size = ((bits_per_pixel * width + 31) // 32) * 4
 
+            output = ""
             for y in range(height - 1, -1, -1):
                 # Move file pointer to the start of the current row
                 f.seek(video_start + y * row_size)
@@ -94,13 +95,19 @@ class VideoParser:
                     green = int.from_bytes(f.read(1), 'little')
                     red = int.from_bytes(f.read(1), 'little')
 
-                    print(f"\u001B[38;2;{red};{green};{blue}m", end='')
-                    print(self.print_char, end='')
-                    print("\u001B[0m", end='')
+                    # Double Buffering: Saves all the data to a variable,
+                    # which is then printed to the screen in one action
+                    output += f"\u001B[38;2;{red};{green};{blue}m"
+                    output += self.print_char
+                    output += "\u001B[0m"
 
-                print()
+                output += "\n"
 
-        self.__clear_terminal()
+            print(output)
+
+        # Moves cursor back to top of display buffer, to allow for overwriting of written data
+        # instead of clearing the entire terminal
+        print("\033[H", end="")
 
     def __print_frames(self):
         retries = 0
@@ -108,7 +115,7 @@ class VideoParser:
         while True:
             frames = os.listdir(self.dirname)
 
-            # If no new frames are being generated, end program
+            # If no new frames are being generated, end the program
             if len(frames) == 0:
                 time.sleep(1)
 
@@ -130,5 +137,7 @@ class VideoParser:
         frame_display = threading.Thread(target=self.__print_frames)
 
         frame_generation.start()
-        time.sleep(0.5) # Giving it some time to generate a few images (I'm so kind)
+        time.sleep(1) # Giving it some time to generate a few images (I'm so kind)
         frame_display.start()
+
+        self.__clear_terminal()

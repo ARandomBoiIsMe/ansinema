@@ -11,16 +11,19 @@ class ImageHandler:
 
         width, height, pixels = parser.parse()
 
+        output = ""
         for y in range(height):
             for x in range(width):
                 # Offsets into current pixel's position to get its colors.
                 red, green, blue = pixels[y * width + x]
 
-                print(f"\u001B[38;2;{red};{green};{blue}m", end='')
-                print(self.print_char, end='')
-                print("\u001B[0m", end='')
+                output += f"\u001B[38;2;{red};{green};{blue}m"
+                output += self.print_char
+                output += "\u001B[0m"
 
-            print()
+            output += "\n"
+
+        print(output)
 
     def __get_parser(self) -> "BMPParser":
         with open(self.path, 'rb') as f:
@@ -47,7 +50,9 @@ class ImageParser:
         print("Running image resize command...")
         subprocess.run(
             ['ffmpeg', '-i', self.path, '-vf', f'scale={cols}:{rows}', f'temp-{self.file_name}'],
-            shell=True
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT
         )
 
         print("Image has been resized.")
