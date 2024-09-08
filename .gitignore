@@ -1,5 +1,10 @@
 venv
 __pycache__
-*.bmp
+
 main.py
-video.py
+
+# Image files
+*.bmp
+
+# Video files
+*.mp4
