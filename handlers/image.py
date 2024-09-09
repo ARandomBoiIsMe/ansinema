@@ -11,19 +11,16 @@ class ImageHandler:
 
         width, height, pixels = parser.parse()
 
-        output = ""
         for y in range(height):
             for x in range(width):
                 # Offsets into current pixel's position to get its colors.
                 red, green, blue = pixels[y * width + x]
 
-                output += f"\u001B[38;2;{red};{green};{blue}m"
-                output += self.print_char
-                output += "\u001B[0m"
+                print(f"\u001B[38;2;{red};{green};{blue}m", end='')
+                print(self.print_char, end='')
+                print("\u001B[0m", end='')
 
-            output += "\n"
-
-        print(output)
+            print()
 
     def __get_parser(self) -> "BMPParser":
         with open(self.path, 'rb') as f:
