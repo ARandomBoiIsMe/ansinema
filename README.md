@@ -12,6 +12,13 @@ birds with one poorly-named stone.
 - Video: Most likely all. FFmpeg is quite robust.
 - Image: `.bmp` (more image formats coming soon...)
 
+# Usage
+
+Make sure to uncomment the appropriate code blocks in the `main.py` file before running the command
+```
+python main.py
+```
+
 # Related blog post(s)
 
 - [Printing images out to the terminal](https://arandomboiisme.github.io/blog/printing-images-out-to-the-terminal/)
