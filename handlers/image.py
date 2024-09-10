@@ -1,5 +1,6 @@
 import os
 import subprocess
+import tempfile
 
 class ImageHandler:
     def __init__(self, path: str, print_char: str = "█") -> None:
@@ -41,29 +42,36 @@ class ImageParser:
         return os.path.basename(self.path)
 
     def _resize_image(self):
-        print("Getting terminal size...")
         cols, rows = os.get_terminal_size()
+        temp = tempfile.mkdtemp()
 
-        print("Running image resize command...")
+        command = [
+            'ffmpeg',
+            '-i',
+            self.path,
+            '-vf',
+            f'scale={cols}:{rows}',
+            os.path.join(temp, f'temp-{self.file_name}')
+        ]
+
         subprocess.run(
-            ['ffmpeg', '-i', self.path, '-vf', f'scale={cols}:{rows}', f'temp-{self.file_name}'],
-            shell=True,
+            command,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.STDOUT
         )
 
-        print("Image has been resized.")
+        return os.path.join(temp, f'temp-{self.file_name}')
 
-    def _delete_temp_image(self):
-        os.remove(f'temp-{self.file_name}')
+    def _delete_temp_image(self, temp):
+        os.remove(temp)
 
 class BMPParser(ImageParser):
     def parse(self):
-        self._resize_image()
+        temp = self._resize_image()
 
         pixels = []
 
-        with open(f'temp-{self.file_name}', 'rb') as f:
+        with open(temp, 'rb') as f:
             # BMP file header
             f.seek(10)
             image_start = int.from_bytes(f.read(4), 'little')
@@ -90,6 +98,6 @@ class BMPParser(ImageParser):
 
                     pixels.append((red, green, blue))
 
-        self._delete_temp_image()
+        self._delete_temp_image(temp)
 
         return width, height, pixels
