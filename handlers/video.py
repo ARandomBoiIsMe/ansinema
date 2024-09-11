@@ -75,11 +75,12 @@ class VideoParser:
         # Calculate row size and padding
         row_size = ((bits_per_pixel * width + 31) // 32) * 4
 
-        output = ""
+        output = []
         for y in range(height - 1, -1, -1):
             # Move file pointer to the start of the current row
             f.seek(video_start + y * row_size)
 
+            pixel = ""
             for _ in range(width):
                 # Little endian means that RGB is now BGR
                 blue = int.from_bytes(f.read(1), 'little')
@@ -88,15 +89,15 @@ class VideoParser:
 
                 # Double Buffering: Saves all the data to a variable,
                 # which is then printed to the screen in one action
-                output += f"\u001B[38;2;{red};{green};{blue}m"
-                output += self.print_char
-                output += "\u001B[0m"
+                pixel += f"\u001B[38;2;{red};{green};{blue}m"
+                pixel += self.print_char
+                pixel += "\u001B[0m"
 
-            output += "\n"
+            output.append(pixel)
 
         # Moves cursor back to top of display buffer, to allow for overwriting of written data
         # instead of clearing the entire terminal
-        print(output, end="\033[H", flush=True)
+        print('\n'.join(output), end="\033[H", flush=True)
 
     def parse(self):
         self.__process_video_frames()
