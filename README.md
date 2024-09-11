@@ -24,4 +24,10 @@ python main.py
 - [Printing images out to the terminal](https://arandomboiisme.github.io/blog/printing-images-out-to-the-terminal/)
 - Playing videos in the terminal (coming soon...)
 
+# Planned Updates
+
+- Playing sound alongside videos
+- Matching video playback to the file's framerate
+- Support for more image formats
+
 **Have fun!**
