@@ -22,7 +22,7 @@ python main.py
 # Related blog post(s)
 
 - [Printing images out to the terminal](https://arandomboiisme.github.io/blog/printing-images-out-to-the-terminal/)
-- Playing videos in the terminal (coming soon...)
+- [Playing videos in the terminal](https://arandomboiisme.github.io/blog/playing-videos-in-the-terminal/)
 
 # Planned Updates
 
