@@ -2,63 +2,41 @@ import os
 import subprocess
 import io
 
+import cv2
+
 class VideoHandler:
-    def __init__(self, path: str, print_char: str = "█") -> None:
+    def __init__(
+        self,
+        path: str = "",
+        camera: bool = False,
+        print_char: str = "█"
+    ) -> None:
         self.path = path
         self.print_char = print_char
+        self.camera = camera
 
     def display(self):
-        parser = VideoParser(self.path, self.print_char)
+        parser = self.__get_parser()
 
         parser.parse()
 
+    def __get_parser(self):
+        if self.camera:
+            return LiveVideoParser(self.print_char)
+
+        if self.path.strip() == "":
+            raise ValueError("Either set the camera flag or provide a video file path.")
+
+        return VideoFileParser(self.path, self.print_char)
+
 class VideoParser:
-    def __init__(self, path: str, print_char: str) -> None:
-        self.path = path
-        self.print_char = print_char
-        self.file_name = self.__get_video_file_name()
-
-    def __get_video_file_name(self):
-        return os.path.basename(self.path)
-
-    def __clear_terminal(self):
+    def _clear_terminal(self):
         if os.name == 'nt':
             os.system('cls')
         else:
             os.system('clear')
 
-    def __process_video_frames(self):
-        cols, rows = os.get_terminal_size()
-
-        command = [
-            "ffmpeg",
-            "-i", self.path,
-            "-f", "image2pipe",
-            "-vcodec", "bmp",
-            "-vf", f"scale={cols}:{rows}",
-            "-"
-        ]
-
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL
-        )
-
-        while True:
-            header = process.stdout.read(14)
-            if not header or len(header) < 14:
-                break
-
-            size = int.from_bytes(header[2:6], 'little')
-            frame = header + process.stdout.read(size - 14)
-
-            self.__print(frame)
-
-        self.__clear_terminal()
-        exit()
-
-    def __print(self, frame):
+    def _print(self, frame):
         f = io.BytesIO(frame)
 
         # BMP file header
@@ -99,5 +77,65 @@ class VideoParser:
         # instead of clearing the entire terminal
         print('\n'.join(output), end="\033[H", flush=True)
 
+class VideoFileParser(VideoParser):
+    def __init__(self, path: str, print_char: str) -> None:
+        self.path = path
+        self.print_char = print_char
+
+    def __process_video_frames(self):
+        cols, rows = os.get_terminal_size()
+
+        command = [
+            "ffmpeg",
+            "-i", self.path,
+            "-f", "image2pipe",
+            "-vcodec", "bmp",
+            "-vf", f"scale={cols}:{rows}",
+            "-"
+        ]
+
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL
+        )
+
+        while True:
+            header = process.stdout.read(14)
+            if not header or len(header) < 14:
+                break
+
+            size = int.from_bytes(header[2:6], 'little')
+            frame = header + process.stdout.read(size - 14)
+
+            self._print(frame)
+
+        self._clear_terminal()
+        exit()
+
     def parse(self):
         self.__process_video_frames()
+
+class LiveVideoParser(VideoParser):
+    def __init__(self, print_char) -> None:
+        self.print_char = print_char
+
+    def parse(self):
+        camera = cv2.VideoCapture(0)
+        cols, rows = os.get_terminal_size()
+
+        while True:
+            result, frame = camera.read()
+
+            frame = cv2.resize(frame, (cols, rows))
+            frame = cv2.flip(frame, 1)
+
+            if frame.shape[2] == 3:
+                bgr = frame
+            else:
+                bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+            # Encode the frame as BMP
+            _, buffer = cv2.imencode('.bmp', bgr)
+
+            self._print(buffer)
