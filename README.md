@@ -14,6 +14,12 @@ birds with one poorly-named stone.
 
 # Usage
 
+Install all needed dependencies
+
+```
+pip install -r requirements.txt
+```
+
 Make sure to uncomment the appropriate code blocks in the `main.py` file before running the command
 ```
 python main.py
