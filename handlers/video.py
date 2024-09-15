@@ -1,6 +1,7 @@
 import os
 import subprocess
 import io
+from queue import Queue
 
 import cv2
 
@@ -9,18 +10,26 @@ class VideoHandler:
         self,
         path: str = "",
         camera: bool = False,
-        print_char: str = "█"
+        print_char: str = "█",
+        stream: bool = False
     ) -> None:
         self.path = path
         self.print_char = print_char
         self.camera = camera
+        self.stream = stream
 
     def display(self):
-        parser = self.__get_parser()
+        handler = self.__get_handler()
 
-        parser.parse()
+        if not self.stream:
+            handler.display()
+        else:
+            if not self.camera:
+                raise ValueError("Only live webcam video data can be streamed.")
 
-    def __get_parser(self):
+            handler.stream()
+
+    def __get_handler(self):
         if self.camera:
             return LiveVideoParser(self.print_char)
 
@@ -113,14 +122,16 @@ class VideoFileParser(VideoParser):
         self._clear_terminal()
         exit()
 
-    def parse(self):
+    def display(self):
         self.__process_video_frames()
 
 class LiveVideoParser(VideoParser):
     def __init__(self, print_char) -> None:
         self.print_char = print_char
+        self.out_stream = Queue()
+        self.in_stream = Queue()
 
-    def parse(self):
+    def display(self):
         camera = cv2.VideoCapture(0)
         cols, rows = os.get_terminal_size()
 
@@ -137,5 +148,31 @@ class LiveVideoParser(VideoParser):
 
             # Encode the frame as BMP
             _, buffer = cv2.imencode('.bmp', bgr)
+
+            self._print(buffer)
+
+    def stream_out(self):
+        camera = cv2.VideoCapture(0)
+
+        while True:
+            _, frame = camera.read()
+            frame = cv2.flip(frame, 1)
+
+            if frame.shape[2] == 3:
+                bgr = frame
+            else:
+                bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+            # Send bgr out to stream for client-side processing
+            self.out_stream.put(bgr, timeout=5)
+
+    def stream_in(self):
+        # Accept raw bgr from stream and process on client device
+        while True:
+            bgr = self.in_stream.get(timeout=5)
+            cols, rows = os.get_terminal_size()
+
+            frame = cv2.resize(bgr, (cols, rows))
+            _, buffer = cv2.imencode('.bmp', frame)
 
             self._print(buffer)
