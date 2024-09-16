@@ -10,24 +10,16 @@ class VideoHandler:
         self,
         path: str = "",
         camera: bool = False,
-        print_char: str = "█",
-        stream: bool = False
+        print_char: str = "█"
     ) -> None:
         self.path = path
         self.print_char = print_char
         self.camera = camera
-        self.stream = stream
 
     def display(self):
         handler = self.__get_handler()
 
-        if not self.stream:
-            handler.display()
-        else:
-            if not self.camera:
-                raise ValueError("Only live webcam video data can be streamed.")
-
-            handler.stream()
+        handler.display()
 
     def __get_handler(self):
         if self.camera:

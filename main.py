@@ -1,9 +1,14 @@
+import argparser
+
 from handlers import image, video
 
-# Uncomment to play a video
-# vid = video.VideoHandler("<video_file_name>.<extension>")
-# vid.display()
+def main():
+    parser = argparser.initialize_argparse()
+    args = parser.parse_args()
 
-# Uncomment to display an image
-# img = image.ImageHandler("<image_file_name>.<extension>")
-# img.display()
+    if not (args.input or args.camera or args.vcall):
+        parser.print_help()
+        return
+
+if __name__ == '__main__':
+    main()
