@@ -7,7 +7,7 @@ class ImageHandler:
         self.path = path
         self.print_char = print_char
 
-    def display(self):
+    def display(self) -> None:
         parser = self.__get_parser()
 
         width, height, pixels = parser.parse()
@@ -23,7 +23,7 @@ class ImageHandler:
 
             print()
 
-    def __get_parser(self) -> "BMPParser":
+    def __get_parser(self) -> "BMPParser" | None:
         with open(self.path, 'rb') as f:
             data = f.read()
 
@@ -38,10 +38,10 @@ class ImageParser:
         self.file_name = self.__get_image_file_name()
         self.print_char = print_char
 
-    def __get_image_file_name(self):
+    def __get_image_file_name(self) -> str:
         return os.path.basename(self.path)
 
-    def _resize_image(self):
+    def _resize_image(self) -> str:
         cols, rows = os.get_terminal_size()
         temp = tempfile.mkdtemp()
 
@@ -62,11 +62,11 @@ class ImageParser:
 
         return os.path.join(temp, f'temp-{self.file_name}')
 
-    def _delete_temp_image(self, temp):
+    def _delete_temp_image(self, temp) -> None:
         os.remove(temp)
 
 class BMPParser(ImageParser):
-    def parse(self):
+    def parse(self) -> tuple[int, int, list]:
         temp = self._resize_image()
 
         pixels = []

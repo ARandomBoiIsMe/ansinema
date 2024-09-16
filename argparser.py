@@ -1,6 +1,6 @@
 import argparse
 
-def initialize_argparse():
+def initialize_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog='python main.py',
         description='Renders images and videos to the terminal. Supports video calls too, yay.'

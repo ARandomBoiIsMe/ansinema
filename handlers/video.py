@@ -16,12 +16,18 @@ class VideoHandler:
         self.print_char = print_char
         self.camera = camera
 
-    def display(self):
+    def display(self) -> None:
         handler = self.__get_handler()
 
         handler.display()
 
-    def __get_handler(self):
+    def stream(self) -> "LiveVideoParser":
+        if not self.camera:
+            raise ValueError("Only camera data can be streamed.")
+
+        return LiveVideoParser(self.print_char)
+
+    def __get_handler(self) -> "VideoFileParser" | "LiveVideoParser":
         if self.camera:
             return LiveVideoParser(self.print_char)
 
@@ -31,13 +37,13 @@ class VideoHandler:
         return VideoFileParser(self.path, self.print_char)
 
 class VideoParser:
-    def _clear_terminal(self):
+    def _clear_terminal(self) -> None:
         if os.name == 'nt':
             os.system('cls')
         else:
             os.system('clear')
 
-    def _print(self, frame):
+    def _print(self, frame) -> None:
         f = io.BytesIO(frame)
 
         # BMP file header
@@ -83,7 +89,7 @@ class VideoFileParser(VideoParser):
         self.path = path
         self.print_char = print_char
 
-    def __process_video_frames(self):
+    def __process_video_frames(self) -> None:
         cols, rows = os.get_terminal_size()
 
         command = [
@@ -114,7 +120,7 @@ class VideoFileParser(VideoParser):
         self._clear_terminal()
         exit()
 
-    def display(self):
+    def display(self) -> None:
         self.__process_video_frames()
 
 class LiveVideoParser(VideoParser):
@@ -123,7 +129,7 @@ class LiveVideoParser(VideoParser):
         self.out_stream = Queue()
         self.in_stream = Queue()
 
-    def display(self):
+    def display(self) -> None:
         camera = cv2.VideoCapture(0)
         cols, rows = os.get_terminal_size()
 
@@ -143,7 +149,7 @@ class LiveVideoParser(VideoParser):
 
             self._print(buffer)
 
-    def stream_out(self):
+    def stream_out(self) -> None:
         camera = cv2.VideoCapture(0)
 
         while True:
@@ -158,7 +164,7 @@ class LiveVideoParser(VideoParser):
             # Send bgr out to stream for client-side processing
             self.out_stream.put(bgr, timeout=5)
 
-    def stream_in(self):
+    def stream_in(self) -> None:
         # Accept raw bgr from stream and process on client device
         while True:
             bgr = self.in_stream.get(timeout=5)
