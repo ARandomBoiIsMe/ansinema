@@ -23,7 +23,7 @@ class ImageHandler:
 
             print()
 
-    def __get_parser(self) -> "BMPParser" | None:
+    def __get_parser(self) -> "BMPParser":
         with open(self.path, 'rb') as f:
             data = f.read()
 

@@ -27,7 +27,7 @@ class VideoHandler:
 
         return LiveVideoParser(self.print_char)
 
-    def __get_handler(self) -> "VideoFileParser" | "LiveVideoParser":
+    def __get_handler(self):
         if self.camera:
             return LiveVideoParser(self.print_char)
 
