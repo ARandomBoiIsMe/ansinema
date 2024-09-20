@@ -32,4 +32,17 @@ def initialize_argparse() -> argparse.ArgumentParser:
         help='Character to be used as pixel on terminal'
     )
 
+    parser.add_argument(
+        '--target_ip',
+        help='IP address of destination computer. Provide this along with --target_port and --out_port to act \
+              as the connecting device.'
+    )
+
+    parser.add_argument(
+        '--target_port',
+        help='Port number of destination computer. Provide this along with --target_ip and --out_port to act \
+              as the connecting device.',
+        type=int
+    )
+
     return parser

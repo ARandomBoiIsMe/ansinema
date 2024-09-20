@@ -1,7 +1,6 @@
 import os
 import subprocess
 import io
-from queue import Queue
 
 import cv2
 
@@ -126,15 +125,14 @@ class VideoFileParser(VideoParser):
 class LiveVideoParser(VideoParser):
     def __init__(self, print_char) -> None:
         self.print_char = print_char
-        self.out_stream = Queue()
-        self.in_stream = Queue()
 
     def display(self) -> None:
         camera = cv2.VideoCapture(0)
         cols, rows = os.get_terminal_size()
+        print("Camera started...")
 
         while True:
-            result, frame = camera.read()
+            _, frame = camera.read()
 
             frame = cv2.resize(frame, (cols, rows))
             frame = cv2.flip(frame, 1)
@@ -149,28 +147,11 @@ class LiveVideoParser(VideoParser):
 
             self._print(buffer)
 
-    def stream_out(self) -> None:
-        camera = cv2.VideoCapture(0)
+    def stream(self, frame, cols, rows) -> None:
+        frame = cv2.flip(frame, 1)
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        frame = cv2.resize(frame, (cols, rows))
 
-        while True:
-            _, frame = camera.read()
-            frame = cv2.flip(frame, 1)
+        _, buffer = cv2.imencode('.bmp', frame)
 
-            if frame.shape[2] == 3:
-                bgr = frame
-            else:
-                bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-
-            # Send bgr out to stream for client-side processing
-            self.out_stream.put(bgr, timeout=5)
-
-    def stream_in(self) -> None:
-        # Accept raw bgr from stream and process on client device
-        while True:
-            bgr = self.in_stream.get(timeout=5)
-            cols, rows = os.get_terminal_size()
-
-            frame = cv2.resize(bgr, (cols, rows))
-            _, buffer = cv2.imencode('.bmp', frame)
-
-            self._print(buffer)
+        self._print(buffer)
