@@ -7,13 +7,15 @@ import cv2
 class VideoHandler:
     def __init__(
         self,
+        color: bool = False,
         path: str = "",
         camera: bool = False,
-        print_char: str = "█"
+        print_char: str = "█",
     ) -> None:
         self.path = path
         self.print_char = print_char
         self.camera = camera
+        self.color = color
 
     def display(self) -> None:
         handler = self.__get_handler()
@@ -28,12 +30,12 @@ class VideoHandler:
 
     def __get_handler(self):
         if self.camera:
-            return LiveVideoParser(self.print_char)
+            return LiveVideoParser(self.print_char, self.color)
 
         if self.path.strip() == "":
             raise ValueError("Either set the camera flag or provide a video file path.")
 
-        return VideoFileParser(self.path, self.print_char)
+        return VideoFileParser(self.path, self.print_char, self.color)
 
 class VideoParser:
     def _clear_terminal(self) -> None:
@@ -41,6 +43,19 @@ class VideoParser:
             os.system('cls')
         else:
             os.system('clear')
+
+    def _asciify_pixel(self, red, green, blue):
+        characters = " .,:;toLCG08#@"
+
+        # https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
+        brightness = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+
+        normalized_brightness = brightness / 255
+
+        # Map the normalized brightness to an index in the characters string
+        index = int(normalized_brightness * (len(characters) - 1))
+
+        return characters[index]
 
     def _print(self, frame) -> None:
         f = io.BytesIO(frame)
@@ -73,9 +88,12 @@ class VideoParser:
 
                 # Double Buffering: Saves all the data to a variable,
                 # which is then printed to the screen in one action
-                pixel += f"\u001B[38;2;{red};{green};{blue}m"
-                pixel += self.print_char
-                pixel += "\u001B[0m"
+                if self.color:
+                    pixel += f"\u001B[38;2;{red};{green};{blue}m"
+                    pixel += self.print_char
+                    pixel += "\u001B[0m"
+                else:
+                    pixel += self._asciify_pixel(red, green, blue)
 
             output.append(pixel)
 
@@ -84,9 +102,10 @@ class VideoParser:
         print('\n'.join(output), end="\033[H", flush=True)
 
 class VideoFileParser(VideoParser):
-    def __init__(self, path: str, print_char: str) -> None:
+    def __init__(self, path: str, print_char: str, color: bool) -> None:
         self.path = path
         self.print_char = print_char
+        self.color = color
 
     def __process_video_frames(self) -> None:
         cols, rows = os.get_terminal_size()
@@ -123,8 +142,9 @@ class VideoFileParser(VideoParser):
         self.__process_video_frames()
 
 class LiveVideoParser(VideoParser):
-    def __init__(self, print_char) -> None:
+    def __init__(self, print_char, color) -> None:
         self.print_char = print_char
+        self.color = color
 
     def display(self) -> None:
         camera = cv2.VideoCapture(0)

@@ -26,6 +26,12 @@ def initialize_argparse() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        '--color',
+        help='Sets the output to be colored',
+        action='store_true'
+    )
+
+    parser.add_argument(
         '-v',
         '--vcall',
         help='Initiate a video call. Only provide this argument to act as the listening device.',

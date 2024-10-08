@@ -39,6 +39,7 @@ def video_call(args: Namespace):
     sock = connection.setup_connection(port, args)
 
     vid_handle = video.VideoHandler(
+        color=args.color if args.color is not None else False,
         camera=True,
         print_char=args.print_character if args.print_character is not None else "█"
     ).stream()
@@ -50,6 +51,7 @@ def display_camera_view(args: Namespace):
     print("Starting webcam...")
 
     video.VideoHandler(
+        color=args.color if args.color is not None else False,
         camera=True,
         print_char=args.print_character if args.print_character is not None else "█"
     ).display()
@@ -72,12 +74,14 @@ def display_media(args: Namespace):
 
 def display_image(args: Namespace):
     image.ImageHandler(
-        args.input,
-        args.print_character if args.print_character is not None else "█"
+        color=args.color if args.color is not None else False,
+        path=args.input,
+        print_char=args.print_character if args.print_character is not None else "█"
     ).display()
 
 def display_video(args: Namespace):
     video.VideoHandler(
+        color=args.color if args.color is not None else False,
         path=args.input,
         print_char=args.print_character if args.print_character is not None else "█"
     ).display()

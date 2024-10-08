@@ -3,9 +3,10 @@ import subprocess
 import tempfile
 
 class ImageHandler:
-    def __init__(self, path: str, print_char: str = "█") -> None:
+    def __init__(self, path: str, print_char: str = "█", color: bool = False) -> None:
         self.path = path
         self.print_char = print_char
+        self.color = color
 
     def display(self) -> None:
         parser = self.__get_parser()
@@ -17,11 +18,27 @@ class ImageHandler:
                 # Offsets into current pixel's position to get its colors.
                 red, green, blue = pixels[y * width + x]
 
-                print(f"\u001B[38;2;{red};{green};{blue}m", end='')
-                print(self.print_char, end='')
-                print("\u001B[0m", end='')
+                if self.color:
+                    print(f"\u001B[38;2;{red};{green};{blue}m", end='')
+                    print(self.print_char, end='')
+                    print("\u001B[0m", end='')
+                else:
+                    print(self.__asciify_pixel(red, green, blue), end='')
 
             print()
+
+    def __asciify_pixel(self, red, green, blue):
+        characters = " .,:;toLCG08#@"
+
+        # https://stackoverflow.com/questions/596216/formula-to-determine-perceived-brightness-of-rgb-color
+        brightness = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+
+        normalized_brightness = brightness / 255
+
+        # Map the normalized brightness to an index in the characters string
+        index = int(normalized_brightness * (len(characters) - 1))
+
+        return characters[index]
 
     def __get_parser(self) -> "BMPParser":
         with open(self.path, 'rb') as f:
