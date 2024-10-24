@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ```
 
 ```
-usage: python main.py [-h] [-i INPUT] [-c] [-p PRINT_CHARACTER] [-v] [--target_ip TARGET_IP]
+usage: python main.py [-h] [-i INPUT] [-c] [-p PRINT_CHARACTER] [--color] [-v] [--target_ip TARGET_IP]
                       [--target_port TARGET_PORT]
 
 Renders images and videos to the terminal. Supports video calls too, yay.
@@ -33,14 +33,14 @@ options:
   -c, --camera          Display view from webcam
   -p PRINT_CHARACTER, --print_character PRINT_CHARACTER
                         Character to be used as pixel on terminal
-  -v, --vcall           Initiate a video call. Only provide this argument to act as the listening
-                        device.
+  --color               Sets the output to be colored
+  -v, --vcall           Initiate a video call. Only provide this argument to act as the listening device.
   --target_ip TARGET_IP
-                        IP address of destination computer. Provide this along with --target_port
-                        to act as the connecting device.
+                        IP address of destination computer. Provide this along with --target_port to act as the
+                        connecting device.
   --target_port TARGET_PORT
-                        Port number of destination computer. Provide this along with --target_ip to
-                        act as the connecting device.
+                        Port number of destination computer. Provide this along with --target_ip to act as the
+                        connecting device.
 ```
 
 # Related blog post(s)

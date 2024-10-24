@@ -67,7 +67,7 @@ def setup_connection(port: int, args: Namespace):
 
         raise err
 
-def send_video_data(sock: socket.socket):
+async def send_video_data(sock: socket.socket):
     camera = cv2.VideoCapture(0)
     print("Camera started...")
 
@@ -85,7 +85,7 @@ def send_video_data(sock: socket.socket):
 
         sock.sendall(message_size + data)
 
-def receive_video_data(sock: socket.socket, video_handler: video.LiveVideoParser):
+async def receive_video_data(sock: socket.socket, video_handler: video.LiveVideoParser):
     cols, rows = os.get_terminal_size()
 
     while True:
